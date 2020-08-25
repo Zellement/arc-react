@@ -1,25 +1,68 @@
-import React from 'react';
-import logo from './logo.svg';
+/* global gapi */
+import React, { Component } from "react";
+import Home from "./Home";
+import Auth from "./auth"
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p className="text-xl text-yellow-500">
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+console.log(Auth.client_id)
+
+const config = {
+  clientId: Auth.client_id,
+  scope: "profile"
+};
+
+class App extends Component {
+  state = {
+    gapiLoaded: false
+  };
+
+  componentDidMount() {
+    const script = document.createElement("script");
+    script.src = "https://apis.google.com/js/client.js";
+
+    script.onload = () => {
+      const initClient = () => {
+        gapi.client.init(config).then(() => {
+          const auth2 = gapi.auth2.getAuthInstance();
+          auth2.isSignedIn.listen(this.handleSigninStatusChange);
+
+          const currentUser = auth2.currentUser.get();
+          const authResponse = currentUser.getAuthResponse(true);
+          if (authResponse && currentUser) {
+            // save access token
+          }
+          this.setState({
+            gapiLoaded: true
+          });
+        });
+      };
+      gapi.load("client:auth2", initClient);
+    };
+
+    document.body.appendChild(script);
+  }
+
+  handleSigninStatusChange = isSignedIn => {
+    const auth2 = gapi.auth2.getAuthInstance();
+    if (isSignedIn) {
+      const currentUser = auth2.currentUser.get();
+      const authResponse = currentUser.getAuthResponse(true);
+      if (authResponse) {
+        // save access token
+      }
+    }
+  };
+
+  render() {
+    const { gapiLoaded } = this.state;
+
+    return gapiLoaded ? (
+      <div>
+        <Home />
+      </div>
+    ) : (
+      <div>Please provide clientId in the config</div>
+    );
+  }
 }
 
 export default App;

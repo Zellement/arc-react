@@ -4,6 +4,8 @@ import './tailwind.output.css';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
 
+console.log(process.env.G_CLIENT_ID)
+
 ReactDOM.render(
   <React.StrictMode>
     <App />
